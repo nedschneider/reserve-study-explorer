@@ -36,6 +36,7 @@ export default function TimelineChart({ results }: Props) {
   }));
 
   const maxBalance = Math.max(...results.map((r) => r.endingBalance));
+  const minBalance = Math.min(...results.map((r) => r.endingBalance));
   const maxExpenditure = Math.max(...results.map((r) => r.expenditures));
 
   const chartWidth = Math.max(900, data.length * 52);
@@ -239,6 +240,7 @@ export default function TimelineChart({ results }: Props) {
           <div style={{ width: chartWidth, height: 308 }}>
             <ResponsiveTimeline
               data={data}
+              minBalance={minBalance}
               maxBalance={maxBalance}
               maxExpenditure={maxExpenditure}
             />
@@ -271,15 +273,17 @@ export default function TimelineChart({ results }: Props) {
 
 function ResponsiveTimeline({
   data,
+  minBalance,
   maxBalance,
   maxExpenditure,
 }: {
   data: any[];
+  minBalance: number;
   maxBalance: number;
   maxExpenditure: number;
 }) {
   const balanceDomain = [
-    Math.floor((-20000) / 50000) * 50000,
+    Math.floor((minBalance - 20000) / 50000) * 50000,
     Math.ceil((maxBalance + 20000) / 50000) * 50000,
   ];
   const expDomain = [0, Math.ceil((maxExpenditure + 5000) / 10000) * 10000];
@@ -308,12 +312,12 @@ function ResponsiveTimeline({
           width={48}
           label={{ value: "Reserve balance", position: "top", offset: 20, style: { fontSize: 11, fill: "var(--ink-soft)", fontWeight: 600, fontFamily: "var(--font-ui)" } }}
           ticks={(() => {
-            const base = [
-              Math.floor(balanceDomain[0] / 50000) * 50000,
-              0,
-              Math.ceil(balanceDomain[1] / 50000) * 50000,
-            ];
-            return [...new Set(base.filter((t) => t >= balanceDomain[0] && t <= balanceDomain[1]))];
+            const step = 50000;
+            const ticks: number[] = [];
+            for (let t = Math.ceil(balanceDomain[0] / step) * step; t <= balanceDomain[1]; t += step) {
+              ticks.push(t);
+            }
+            return ticks;
           })()}
         />
         <YAxis
@@ -362,8 +366,39 @@ function ResponsiveTimeline({
           dataKey="balance"
           stroke="#0d6e6e"
           strokeWidth={5}
-          dot={{ r: 4, fill: "#0d6e6e", stroke: "#fff", strokeWidth: 2 }}
-          activeDot={{ r: 8, fill: "#0d6e6e", stroke: "#fff", strokeWidth: 2 }}
+          dot={(props: any) => {
+            const { cx, cy, payload } = props;
+            const negative = payload?.balance < 0;
+            const fill = negative ? "#c0492c" : "#0d6e6e";
+            return (
+              <circle
+                key={`dot-${payload?.year}`}
+                cx={cx}
+                cy={cy}
+                r={4}
+                fill={fill}
+                stroke="#fff"
+                strokeWidth={2}
+                style={{ transition: "r 0.2s" }}
+              />
+            );
+          }}
+          activeDot={(props: any) => {
+            const { cx, cy, payload } = props;
+            const negative = payload?.balance < 0;
+            const fill = negative ? "#c0492c" : "#0d6e6e";
+            return (
+              <circle
+                key={`active-dot-${payload?.year}`}
+                cx={cx}
+                cy={cy}
+                r={8}
+                fill={fill}
+                stroke="#fff"
+                strokeWidth={2}
+              />
+            );
+          }}
           connectNulls
         />
       </ComposedChart>
