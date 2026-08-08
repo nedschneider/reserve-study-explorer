@@ -154,6 +154,23 @@ export default function LeverPanel({ scenario, dispatch, breakEvenContribution }
           font-size: 12px;
           color: var(--ink-faint);
         }
+        .lever-number-wrap {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+        }
+        .lever-number-wrap .lever-number {
+          width: 90px;
+          padding-right: 22px;
+        }
+        .lever-number-wrap .lever-suffix {
+          position: absolute;
+          right: 8px;
+          font-size: 13px;
+          color: var(--ink-faint);
+          pointer-events: none;
+          font-weight: 600;
+        }
         .lever-number {
           width: 90px;
           font-family: var(--font-ui);
@@ -258,19 +275,22 @@ export default function LeverPanel({ scenario, dispatch, breakEvenContribution }
             <div className="lever" key={l.key}>
               <div className="lever-top">
                 <span className="lever-label">{l.label}</span>
-                <input
-                  className="lever-number"
-                  type="number"
-                  min={l.min}
-                  max={l.max}
-                  step={l.step}
-                  value={scenario[l.key]}
-                  onChange={(e) => {
-                    const v = Number(e.target.value);
-                    if (!Number.isNaN(v))
-                      dispatch({ type: "set", patch: { [l.key]: v } as Partial<Scenario> });
-                  }}
-                />
+                <div className="lever-number-wrap">
+                  <input
+                    className="lever-number"
+                    type="number"
+                    min={l.min}
+                    max={l.max}
+                    step={l.step}
+                    value={scenario[l.key]}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      if (!Number.isNaN(v))
+                        dispatch({ type: "set", patch: { [l.key]: v } as Partial<Scenario> });
+                    }}
+                  />
+                  {l.unit === "%" && <span className="lever-suffix">%</span>}
+                </div>
               </div>
               <input
                 type="range"
