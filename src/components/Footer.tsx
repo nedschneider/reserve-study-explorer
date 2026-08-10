@@ -12,7 +12,7 @@ export default function Footer() {
         }
         .footer strong { color: var(--ink-soft); font-weight: 600; }
       `}</style>
-      Data: reserve study, June 18, 2026.
+      Data: reserve study, June 18, 2026, corrected with family-ground-truth knowledge.
       Model derived from study parameters (2% inflation, 0% reserve interest, $0 start).
       Family planning use only.
     </footer>

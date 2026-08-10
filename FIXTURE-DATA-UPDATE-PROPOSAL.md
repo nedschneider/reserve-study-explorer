@@ -2,7 +2,10 @@
 
 ## Status
 
-**Not yet acted on.** This is a proposal developed from family-provided ground-truth corrections to the original MCA reserve study data. It is ready for implementation when the family decides to proceed.
+**Implemented.** All seven changes have been applied; the study-fidelity layer (`PUBLISHED_FIXTURES`
+lookup table and study-reproduction tests) has been retired. Fully-funded reserves now compute
+via straight-line depreciation. Tests rewritten to verify structural properties. See git history
+for the implementing commit.
 
 ## Context
 
@@ -166,9 +169,20 @@ Overall total expenditures across 2027–2046 will likely increase (the recurrin
 - `src/components/ComponentTable.tsx` — the reference table UI (hardcoded "22 components" label)
 - `src/theme.ts` — category colors (no changes needed, all new items use "Grounds Components")
 
-## Open questions for the family
+## Open questions for the family (now answered - implement)
 
 1. **Actual costs** for the Zing roof (2023) and main house siding (~2022) replacements — should we use real costs or keep the study's estimates?
+
+Real costs
+
 2. **Dock first occurrence** — was the last major ice-out damage recent (e.g., ~2022, making next ~2032) or longer ago? This determines whether the first $50K hits in 2032 vs. 2037.
+   
+   2022
+
 3. **Dock worst-case modeling** — should we also offer a pessimistic variant (7-year cycle) alongside the 10-year average?
+
+No
+
 4. **Forestry scope** — is $10K/5yr meant to cover *only* professional tree service, or also the family's own labor (driveway cuttings, power pruner)? If the latter, the cash expense might be lower.
+
+Only professional tree service.

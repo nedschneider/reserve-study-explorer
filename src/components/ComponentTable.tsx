@@ -83,8 +83,8 @@ export default function ComponentTable() {
       <div className={`reference ${open ? "open" : ""}`}>
         <div className="toggle" onClick={() => setOpen((o) => !o)}>
           <div className="toggle-left">
-            <h2>The 22 components</h2>
-            <div className="sub">Read-only reference, exactly as the study specifies</div>
+            <h2>The 25 components</h2>
+            <div className="sub">Corrected with family-ground-truth knowledge of the compound</div>
           </div>
           <svg className="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M6 9l6 6 6-6" />

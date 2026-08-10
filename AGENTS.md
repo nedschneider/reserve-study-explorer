@@ -16,13 +16,16 @@ Interactive reserve-study scenario explorer for the Timberlost LLC compound.
 
 ## Data provenance
 
-All asset and projection data is baked from the **Michael Callahan & Associates, LLC** reserve
-study dated **June 18, 2026** (budget year Jan 1, 2027). The original PDF is the source of truth;
-this app reproduces its numbers via a derived model:
+Asset and projection data originated from a reserve study dated **June 18, 2026** (budget year
+Jan 1, 2027) and has since been corrected with family-ground-truth knowledge of the compound
+(moved-up roof replacements, freshly-replaced siding, new recurring items: dock, driveway,
+forestry). The study's published projection is no longer reproduced exactly; the model now
+reflects the family's actual maintenance realities:
 
 - Future cost = `actualCost × (1 + inflation)^(replacementYear − 2027)`
-- Default scenario (seed $0, contribution $0, inflation 2%, interest 0%) reproduces the study's
-  published 2027–2046 projection exactly (verified by unit tests in `tests/simulate.test.ts`).
+- Fully-funded reserves computed via straight-line depreciation (no longer a study lookup table).
+- Unit tests in `tests/simulate.test.ts` verify structural properties (expenditure scheduling,
+  category sums, solver correctness) rather than study-fidelity.
 
 ## Deploying
 

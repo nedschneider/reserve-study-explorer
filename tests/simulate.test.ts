@@ -5,30 +5,23 @@ import {
   expenditureYears,
   solveContribution,
 } from "../src/lib/simulate";
-import { COMPONENTS, STUDY_DEFAULTS, PUBLISHED_FIXTURES } from "../src/data/components";
+import { COMPONENTS, STUDY_DEFAULTS, BASE_YEAR } from "../src/data/components";
 import type { Scenario } from "../src/types";
 
-const TOLERANCE = 1; // ±$1 rounding tolerance, per the study's whole-dollar rounding.
+const TOLERANCE = 1; // ±$1 rounding tolerance.
 
 describe("futureCost", () => {
-  it("matches the study's Future Cost for every component at its replacement year (2% inflation)", () => {
-    const cases: [number, number][] = [
-      [1285, 32806.46], // Boathouse Roof 28000 -> 2035
-      [1265, 71412.31], // Septic 50000 -> 2045
-      [1261, 66241.19], // Main House Window 30000 -> 2067
-      [1284, 3514.98], // Icehouse Roof 3000 -> 2035
-      [1273, 10819.99], // Main House Boiler 9800 -> 2032
-      [1270, 2800.0], // Main House HW Heater 2800 -> 2027 (year 0)
-    ];
-    for (const [id, expected] of cases) {
-      const c = COMPONENTS.find((x) => x.id === id)!;
-      const got = futureCost(c.actualCost, 2, c.replacementYear);
-      expect(got).toBeCloseTo(expected, 1);
-    }
+  it("returns the actual cost when occurrence is the base year", () => {
+    expect(futureCost(1000, 5, BASE_YEAR)).toBe(1000);
   });
 
-  it("returns the actual cost when occurrence is the base year", () => {
-    expect(futureCost(1000, 5, 2027)).toBe(1000);
+  it("inflates the cost for years after the base year", () => {
+    // 28000 at year 2035 (8 years of 2% inflation): 28000 × 1.02^8
+    expect(futureCost(28000, 2, 2035)).toBeCloseTo(28000 * Math.pow(1.02, 8), 1);
+  });
+
+  it("does not inflate for years before the base year", () => {
+    expect(futureCost(1000, 5, 2020)).toBe(1000);
   });
 });
 
@@ -38,7 +31,7 @@ describe("expenditureYears", () => {
     expect(expenditureYears(mainHWH, 2070)).toEqual([2027, 2045, 2063]);
   });
 
-  it("includes only years within the study horizon for the published rows", () => {
+  it("includes only years within the horizon", () => {
     const boiler = COMPONENTS.find((c) => c.id === 1273)!; // repl 2032, UL 30
     expect(expenditureYears(boiler, 2046)).toEqual([2032]);
   });
@@ -47,9 +40,41 @@ describe("expenditureYears", () => {
     const cabinSiding = COMPONENTS.find((c) => c.id === 1277)!; // repl 2028, UL 40
     expect(expenditureYears(cabinSiding, 2046)).toEqual([2028]);
   });
+
+  it("fires the main house and icehouse roofs in 2028 (moved up from 2035)", () => {
+    const mainRoof = COMPONENTS.find((c) => c.id === 1271)!;
+    expect(expenditureYears(mainRoof, 2046)).toEqual([2028]);
+    const iceRoof = COMPONENTS.find((c) => c.id === 1284)!;
+    expect(expenditureYears(iceRoof, 2046)).toEqual([2028]);
+  });
+
+  it("does not fire the zing house roof within the default horizon (moved to 2053)", () => {
+    const zingRoof = COMPONENTS.find((c) => c.id === 1288)!;
+    expect(expenditureYears(zingRoof, 2046)).toEqual([]);
+  });
+
+  it("does not fire the main house siding within the default horizon (moved to 2062)", () => {
+    const siding = COMPONENTS.find((c) => c.id === 1272)!;
+    expect(expenditureYears(siding, 2046)).toEqual([]);
+  });
+
+  it("fires the dock ice damage at 10-year intervals", () => {
+    const dock = COMPONENTS.find((c) => c.id === 1289)!; // repl 2032, UL 10
+    expect(expenditureYears(dock, 2046)).toEqual([2032, 2042]);
+  });
+
+  it("fires the driveway maintenance at 5-year intervals", () => {
+    const driveway = COMPONENTS.find((c) => c.id === 1290)!; // repl 2027, UL 5
+    expect(expenditureYears(driveway, 2046)).toEqual([2027, 2032, 2037, 2042]);
+  });
+
+  it("fires the forestry maintenance at 5-year intervals", () => {
+    const forestry = COMPONENTS.find((c) => c.id === 1291)!; // repl 2027, UL 5
+    expect(expenditureYears(forestry, 2046)).toEqual([2027, 2032, 2037, 2042]);
+  });
 });
 
-describe("simulate (default scenario reproduces the study)", () => {
+describe("simulate (structural properties)", () => {
   const results = simulate(STUDY_DEFAULTS, COMPONENTS);
 
   it("produces a row for every year 2027–2046", () => {
@@ -58,32 +83,60 @@ describe("simulate (default scenario reproduces the study)", () => {
     expect(results[19].year).toBe(2046);
   });
 
-  it.each(PUBLISHED_FIXTURES.map((f) => [f.year, f] as const))(
-    "reproduces year %i expenditures, ending reserves, fully funded, and percent funded",
-    (year, f) => {
-      const r = results.find((x) => x.year === year)!;
-      expect(r.expenditures).toBeCloseTo(f.expenditures, -1 * Math.ceil(-Math.log10(TOLERANCE + 1)));
-      // Looser but clear: within $1.
-      expect(Math.abs(r.expenditures - f.expenditures)).toBeLessThanOrEqual(TOLERANCE);
-      expect(Math.abs(r.endingBalance - f.endingReserves)).toBeLessThanOrEqual(TOLERANCE);
-      expect(Math.abs(r.fullyFunded - f.fullyFunded)).toBeLessThanOrEqual(TOLERANCE);
-      expect(Math.abs(r.percentFunded - f.percentFunded)).toBeLessThan(0.005);
-    },
-  );
-
-  it("totals expenditures match the study's published totals each year", () => {
-    for (const f of PUBLISHED_FIXTURES) {
-      const r = results.find((x) => x.year === f.year)!;
-      const byCatSum = Object.values(r.expendituresByCategory).reduce((a, b) => a + b, 0);
-      expect(Math.abs(byCatSum - r.expenditures)).toBeLessThanOrEqual(TOLERANCE);
-    }
-  });
-
   it("has a zero contribution and zero interest under study defaults", () => {
     for (const r of results) {
       expect(r.contribution).toBe(0);
       expect(r.interest).toBe(0);
     }
+  });
+
+  it("category sums match total expenditures each year", () => {
+    for (const r of results) {
+      const byCatSum = Object.values(r.expendituresByCategory).reduce((a, b) => a + b, 0);
+      expect(Math.abs(byCatSum - r.expenditures)).toBeLessThanOrEqual(TOLERANCE);
+    }
+  });
+
+  it("component detail sums match total expenditures each year", () => {
+    for (const r of results) {
+      const byCompSum = r.expendituresByComponent.reduce((a, c) => a + c.amount, 0);
+      expect(Math.abs(byCompSum - r.expenditures)).toBeLessThanOrEqual(TOLERANCE);
+    }
+  });
+
+  it("ending balance equals accumulated expenditures (no contributions/interest)", () => {
+    let cumulative = 0;
+    for (const r of results) {
+      cumulative += r.expenditures;
+      expect(Math.abs(r.endingBalance + cumulative)).toBeLessThanOrEqual(TOLERANCE);
+    }
+  });
+
+  it("has expenditures in 2028 for the moved-up roofs", () => {
+    const r2028 = results.find((r) => r.year === 2028)!;
+    expect(r2028.expendituresByCategory.Roofing).toBeGreaterThan(0);
+  });
+
+  it("still has roofing expenditures in 2035 (boathouse, cabin, cottage, studio)", () => {
+    const r2035 = results.find((r) => r.year === 2035)!;
+    expect(r2035.expendituresByCategory.Roofing).toBeGreaterThan(0);
+  });
+
+  it("does not fire the main house or icehouse roofs in 2035 (moved to 2028)", () => {
+    const r2035 = results.find((r) => r.year === 2035)!;
+    const compIds = r2035.expendituresByComponent.map((c) => c.id);
+    expect(compIds).not.toContain(1271); // Main House roof
+    expect(compIds).not.toContain(1284); // Icehouse roof
+  });
+
+  it("has grounds expenditures in 2027 (driveway + forestry first cycle)", () => {
+    const r2027 = results.find((r) => r.year === 2027)!;
+    expect(r2027.expendituresByCategory["Grounds Components"]).toBeGreaterThan(0);
+  });
+
+  it("has grounds expenditures in 2032 (dock + driveway + forestry)", () => {
+    const r2032 = results.find((r) => r.year === 2032)!;
+    expect(r2032.expendituresByCategory["Grounds Components"]).toBeGreaterThan(0);
   });
 });
 
@@ -107,15 +160,16 @@ describe("solveContribution", () => {
     expect(endingBelow).toBeLessThan(-0.5);
   });
 
-  it("break-even contribution is close to total-expenses / years (≈ $16,795/yr)", () => {
+  it("break-even contribution is close to total-expenses / years", () => {
     const needed = solveContribution(base, { kind: "break-even" }, COMPONENTS);
-    const totalExp = PUBLISHED_FIXTURES.reduce((a, f) => a + f.expenditures, 0);
+    const results = simulate(base, COMPONENTS);
+    const totalExp = results.reduce((a, r) => a + r.expenditures, 0);
     const perYear = totalExp / 20;
     // Should be within a few dollars of the naive average.
     expect(Math.abs(needed - perYear)).toBeLessThan(5);
   });
 
-  it("finds a contribution reaching 100% funded by the horizon end (not year 1)", () => {
+  it("finds a contribution reaching 100% funded by the horizon end", () => {
     const needed = solveContribution(base, { kind: "fundedPercent", pct: 100 }, COMPONENTS);
     expect(needed).toBeGreaterThan(0);
     const results = simulate({ ...base, annualContribution: needed }, COMPONENTS);

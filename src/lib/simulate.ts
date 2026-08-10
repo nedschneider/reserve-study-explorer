@@ -5,29 +5,18 @@ import type {
   SolveTarget,
   Category,
 } from "../types";
-import { BASE_YEAR, PUBLISHED_FIXTURES, emptyCategoryMap } from "../data/components";
+import { BASE_YEAR, emptyCategoryMap } from "../data/components";
 
 /**
- * Fully-funded reserve target for a year.
- *
- * NOTE: The study's published "Fully Funded Reserves" column for 2027–2046 is reproduced via a
- * lookup table (exact, baked from the PDF). Beyond 2046 we extend with a straight-line
- * depreciation approximation. The exact depreciation convention used by MCA was not derivable
- * from the report, so the published table is authoritative within the study horizon.
+ * Fully-funded reserve target for a year, computed via straight-line depreciation:
+ * for each component, the fraction of its useful life consumed determines how much
+ * of its future cost is already "accrued."
  */
-const PUBLISHED_FF = new Map<number, number>(
-  PUBLISHED_FIXTURES.map((f) => [f.year, f.fullyFunded]),
-);
-
 export function fullyFundedForYear(
   components: Component[],
   year: number,
   inflationPct: number,
 ): number {
-  const published = PUBLISHED_FF.get(year);
-  if (published !== undefined) return published;
-
-  // Extension beyond 2046: straight-line depreciation approximation.
   let total = 0;
   for (const c of components) {
     const step = Math.max(1, c.usefulLife);
