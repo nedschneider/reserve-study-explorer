@@ -62,7 +62,6 @@ export default function App() {
       type: "set",
       patch: {
         annualContribution: breakEvenContribution,
-        contributionIncreasePct: 0,
       },
     });
   }, [breakEvenContribution]);
