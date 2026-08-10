@@ -83,7 +83,7 @@ export default function TimelineChart({ results }: Props) {
           font-size: 13px;
           min-width: 220px;
           max-width: 320px;
-          max-height: 100%;
+          max-height: 280px;
           display: flex;
           flex-direction: column;
           overflow: hidden;
@@ -237,7 +237,7 @@ export default function TimelineChart({ results }: Props) {
           </div>
         </div>
         <div className="timeline-scroll">
-          <div style={{ width: chartWidth, height: 308 }}>
+          <div style={{ width: chartWidth, height: 340 }}>
             <ResponsiveTimeline
               data={data}
               minBalance={minBalance}
@@ -331,7 +331,7 @@ function ResponsiveTimeline({
           width={48}
           label={{ value: "Expenses", position: "top", offset: 20, style: { fontSize: 11, fill: "var(--ink-soft)", fontWeight: 600, fontFamily: "var(--font-ui)" } }}
         />
-        <Tooltip content={<TimelineTooltip />} cursor={{ fill: "rgba(28,27,25,0.04)" }} />
+        <Tooltip content={<TimelineTooltip />} cursor={{ fill: "rgba(28,27,25,0.04)" }} offset={16} allowEscapeViewBox={{ x: false, y: true }} />
         <ReferenceLine yAxisId="balance" y={0} stroke="var(--ink-faint)" strokeWidth={1.5} strokeDasharray="4 4" />
         {CATEGORIES.map((c) => (
           <Bar
