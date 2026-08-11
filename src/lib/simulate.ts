@@ -101,7 +101,7 @@ export function simulate(scenario: Scenario, components: Component[]): YearResul
       const amount = futureCost(c.actualCost, inflationPct, y);
       expenditures += amount;
       byCat[c.category] += amount;
-      byComp.push({ id: c.id, description: c.description, amount, category: c.category });
+      byComp.push({ id: c.id, description: c.description, building: c.building, amount, category: c.category });
     }
 
     const endingBalance = beginningBalance + contribution + interest - expenditures;

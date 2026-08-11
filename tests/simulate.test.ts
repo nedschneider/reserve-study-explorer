@@ -41,36 +41,51 @@ describe("expenditureYears", () => {
     expect(expenditureYears(cabinSiding, 2046)).toEqual([2028]);
   });
 
-  it("fires the main house and icehouse roofs in 2028 (moved up from 2035)", () => {
+  it("fires the main house and icehouse roofs in 2028", () => {
     const mainRoof = COMPONENTS.find((c) => c.id === 1271)!;
     expect(expenditureYears(mainRoof, 2046)).toEqual([2028]);
     const iceRoof = COMPONENTS.find((c) => c.id === 1284)!;
     expect(expenditureYears(iceRoof, 2046)).toEqual([2028]);
   });
 
-  it("does not fire the zing house roof within the default horizon (moved to 2053)", () => {
+  it("does not fire the zing house roof within the default horizon (repl 2054)", () => {
     const zingRoof = COMPONENTS.find((c) => c.id === 1288)!;
     expect(expenditureYears(zingRoof, 2046)).toEqual([]);
   });
 
-  it("does not fire the main house siding within the default horizon (moved to 2062)", () => {
+  it("does not fire the main house siding within the default horizon (repl 2062)", () => {
     const siding = COMPONENTS.find((c) => c.id === 1272)!;
     expect(expenditureYears(siding, 2046)).toEqual([]);
   });
 
-  it("fires the dock ice damage at 10-year intervals", () => {
-    const dock = COMPONENTS.find((c) => c.id === 1289)!; // repl 2032, UL 10
-    expect(expenditureYears(dock, 2046)).toEqual([2032, 2042]);
+  it("fires the dock maintenance at 10-year intervals from 2030", () => {
+    const dock = COMPONENTS.find((c) => c.id === 1289)!; // repl 2030, UL 10
+    expect(expenditureYears(dock, 2046)).toEqual([2030, 2040]);
   });
 
-  it("fires the driveway maintenance at 5-year intervals", () => {
-    const driveway = COMPONENTS.find((c) => c.id === 1290)!; // repl 2027, UL 5
-    expect(expenditureYears(driveway, 2046)).toEqual([2027, 2032, 2037, 2042]);
+  it("fires the driveway maintenance at 5-year intervals from 2029", () => {
+    const driveway = COMPONENTS.find((c) => c.id === 1290)!; // repl 2029, UL 5
+    expect(expenditureYears(driveway, 2046)).toEqual([2029, 2034, 2039, 2044]);
   });
 
-  it("fires the forestry maintenance at 5-year intervals", () => {
-    const forestry = COMPONENTS.find((c) => c.id === 1291)!; // repl 2027, UL 5
-    expect(expenditureYears(forestry, 2046)).toEqual([2027, 2032, 2037, 2042]);
+  it("fires the tree work at 5-year intervals from 2032", () => {
+    const treeWork = COMPONENTS.find((c) => c.id === 1291)!; // repl 2032, UL 5
+    expect(expenditureYears(treeWork, 2046)).toEqual([2032, 2037, 2042]);
+  });
+
+  it("fires the cabin exterior paint at 5-year intervals from 2027", () => {
+    const cabinPaint = COMPONENTS.find((c) => c.id === 1295)!; // repl 2027, UL 5
+    expect(expenditureYears(cabinPaint, 2046)).toEqual([2027, 2032, 2037, 2042]);
+  });
+
+  it("fires the tennis court rehabilitation at 10-year intervals from 2029", () => {
+    const tennis = COMPONENTS.find((c) => c.id === 1307)!; // repl 2029, UL 10
+    expect(expenditureYears(tennis, 2046)).toEqual([2029, 2039]);
+  });
+
+  it("fires the woodshed roof in 2032", () => {
+    const woodshed = COMPONENTS.find((c) => c.id === 1308)!; // repl 2032, UL 30
+    expect(expenditureYears(woodshed, 2046)).toEqual([2032]);
   });
 });
 
@@ -122,19 +137,34 @@ describe("simulate (structural properties)", () => {
     expect(r2035.expendituresByCategory.Roofing).toBeGreaterThan(0);
   });
 
-  it("does not fire the main house or icehouse roofs in 2035 (moved to 2028)", () => {
+  it("does not fire the main house or icehouse roofs in 2035", () => {
     const r2035 = results.find((r) => r.year === 2035)!;
     const compIds = r2035.expendituresByComponent.map((c) => c.id);
     expect(compIds).not.toContain(1271); // Main House roof
     expect(compIds).not.toContain(1284); // Icehouse roof
   });
 
-  it("has grounds expenditures in 2027 (driveway + forestry first cycle)", () => {
+  it("has building-component expenditures in 2027 (boathouse siding + cabin paint)", () => {
     const r2027 = results.find((r) => r.year === 2027)!;
-    expect(r2027.expendituresByCategory["Grounds Components"]).toBeGreaterThan(0);
+    expect(r2027.expendituresByCategory["Building Components"]).toBeGreaterThan(0);
+    const compIds = r2027.expendituresByComponent.map((c) => c.id);
+    expect(compIds).toContain(1299); // Boathouse siding
+    expect(compIds).toContain(1295); // Cabin exterior paint
   });
 
-  it("has grounds expenditures in 2032 (dock + driveway + forestry)", () => {
+  it("has grounds expenditures in 2029 (tennis court + driveway)", () => {
+    const r2029 = results.find((r) => r.year === 2029)!;
+    expect(r2029.expendituresByCategory["Grounds Components"]).toBeGreaterThan(0);
+  });
+
+  it("fires the dock maintenance in 2030", () => {
+    const r2030 = results.find((r) => r.year === 2030)!;
+    const dock = r2030.expendituresByComponent.find((c) => c.id === 1289);
+    expect(dock).toBeDefined();
+    expect(dock!.amount).toBeCloseTo(futureCost(50000, 2, 2030), 1);
+  });
+
+  it("has grounds expenditures in 2032 (tree work)", () => {
     const r2032 = results.find((r) => r.year === 2032)!;
     expect(r2032.expendituresByCategory["Grounds Components"]).toBeGreaterThan(0);
   });

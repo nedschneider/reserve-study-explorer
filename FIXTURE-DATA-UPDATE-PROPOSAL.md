@@ -7,6 +7,11 @@ lookup table and study-reproduction tests) has been retired. Fully-funded reserv
 via straight-line depreciation. Tests rewritten to verify structural properties. See git history
 for the implementing commit.
 
+**Superseded (2026-08).** The seven edits below have since been folded into a **total replacement**
+of the fixture set: `src/data/components.ts` is now derived from `Timberlost Maintenance Plan.exe.csv`
+(42 components, each mapped directly from the plan's Description / Today's Cost / Replacement Cycle /
+Remaining Life / Scheduled Replacement columns). See `AGENTS.md` → Data provenance → Fixture data.
+
 ## Context
 
 The app's `COMPONENTS` array (`src/data/components.ts`) is currently baked directly from the Michael Callahan & Associates reserve study dated June 18, 2026 (budget year Jan 1, 2027). The original PDF was excluded from the public GitHub repo for privacy. The app guarantees the default scenario reproduces the study's published 2027–2046 projection exactly, enforced by `PUBLISHED_FIXTURES` (a baked lookup table) and 32 unit tests in `tests/simulate.test.ts`.

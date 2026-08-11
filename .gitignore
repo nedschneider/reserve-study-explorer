@@ -37,3 +37,6 @@ Thumbs.db
 
 # Source PDF (private financial document — do not publish)
 *.pdf
+
+# Source plan CSV (private financial document — do not publish)
+Timberlost Maintenance Plan.exe.csv

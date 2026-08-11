@@ -27,6 +27,16 @@ reflects the family's actual maintenance realities:
 - Unit tests in `tests/simulate.test.ts` verify structural properties (expenditure scheduling,
   category sums, solver correctness) rather than study-fidelity.
 
+### Fixture data
+
+The fixture set in `src/data/components.ts` is a **total replacement** sourced from
+`Timberlost Maintenance Plan.exe.csv` (a CSV export of the maintenance plan, kept out of git —
+private financial document). Each row maps directly: Description → `description`/`building`,
+Today's Cost → `actualCost`, Replacement Cycle → `usefulLife`, Scheduled Replacement →
+`replacementYear`. `placedInServiceYear` is derived as `replacementYear − usefulLife` with
+`adjustment = 0`, so every component sits at end-of-life just before its scheduled replacement.
+When the plan changes, update the CSV (do not commit it) and re-derive the array.
+
 ## Deploying
 
 GitHub Pages via GitHub Actions (see `.github/workflows/deploy.yml`). `vite.config.ts` sets

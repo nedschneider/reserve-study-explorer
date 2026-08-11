@@ -9,6 +9,9 @@ export default function ComponentTable() {
 
   const rows = COMPONENTS.map((c) => ({
     ...c,
+    name: c.description.includes(" - ")
+      ? c.description.split(" - ").slice(1).join(" - ")
+      : c.description,
     futureCost2: Math.round(futureCost(c.actualCost, 2, c.replacementYear)),
   })).sort((a, b) => a.replacementYear - b.replacementYear || a.building.localeCompare(b.building));
 
@@ -83,8 +86,8 @@ export default function ComponentTable() {
       <div className={`reference ${open ? "open" : ""}`}>
         <div className="toggle" onClick={() => setOpen((o) => !o)}>
           <div className="toggle-left">
-            <h2>The 25 components</h2>
-            <div className="sub">Corrected with family-ground-truth knowledge of the compound</div>
+            <h2>The {COMPONENTS.length} components</h2>
+            <div className="sub">Sourced from the Timberlost maintenance plan</div>
           </div>
           <svg className="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M6 9l6 6 6-6" />
@@ -109,7 +112,7 @@ export default function ComponentTable() {
                 {rows.map((c) => (
                   <tr key={c.id}>
                     <td className="building">{c.building}</td>
-                    <td>{c.description.split(" - ").slice(1).join(" - ")}</td>
+                    <td>{c.name}</td>
                     <td>
                       <span
                         className="cat-pill"

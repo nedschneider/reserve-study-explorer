@@ -49,7 +49,7 @@ export interface YearResult {
   interest: number;
   expenditures: number;
   expendituresByCategory: Record<Category, number>;
-  expendituresByComponent: { id: number; description: string; amount: number; category: Category }[];
+  expendituresByComponent: { id: number; description: string; building: string; amount: number; category: Category }[];
   endingBalance: number;
   fullyFunded: number;
   percentFunded: number;

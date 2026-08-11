@@ -17,7 +17,7 @@ export default function BreakdownChart({ results }: Props) {
   const buildingTotals = new Map<string, number>();
   for (const r of results) {
     for (const comp of r.expendituresByComponent) {
-      const b = comp.description.split(" - ")[0];
+      const b = comp.building;
       buildingTotals.set(b, (buildingTotals.get(b) ?? 0) + comp.amount);
     }
   }
