@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CATEGORIES } from "../types";
 import { CATEGORY_HEX, CATEGORY_HEX_DESAT } from "../theme";
-import { usdCompact, usd } from "../lib/format";
+import { usdCompact, usd, usdSigned } from "../lib/format";
 import type { YearResult } from "../types";
 import {
   ComposedChart,
@@ -83,10 +83,8 @@ export default function TimelineChart({ results }: Props) {
           font-size: 13px;
           min-width: 220px;
           max-width: 320px;
-          max-height: 280px;
           display: flex;
           flex-direction: column;
-          overflow: hidden;
         }
         .timeline-tooltip.shortfall-zone {
           border-left: 3px solid var(--shortfall);
@@ -136,48 +134,16 @@ export default function TimelineChart({ results }: Props) {
           flex-shrink: 0;
         }
         .tt-section-out {
-          flex: 1 1 auto;
-          min-height: 0;
-          display: flex;
-          flex-direction: column;
           margin-top: 6px;
         }
         .tt-components-scroll {
-          flex: 1 1 auto;
-          min-height: 0;
-          overflow-y: auto;
           margin-top: 4px;
           padding: 4px 8px 4px 0;
           font-size: 12px;
         }
-        .tt-components-scroll::-webkit-scrollbar { width: 6px; }
-        .tt-components-scroll::-webkit-scrollbar-thumb {
-          background: var(--rule);
-          border-radius: 3px;
-        }
         .tt-section:first-of-type {
           margin-top: 0;
           padding-top: 0;
-        }
-        .tt-section-scroll {
-          flex: 1 1 auto;
-          min-height: 0;
-          overflow-y: auto;
-          margin: 0 -14px -12px;
-          padding: 0 14px 12px;
-        }
-        .tt-section-scroll::-webkit-scrollbar { width: 6px; }
-        .tt-section-scroll::-webkit-scrollbar-thumb {
-          background: var(--rule);
-          border-radius: 3px;
-        }
-        .tt-section-title {
-          font-size: 10px;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          font-weight: 700;
-          color: var(--ink-faint);
-          margin-bottom: 4px;
         }
         .tt-row {
           display: flex;
@@ -433,15 +399,10 @@ function TimelineTooltip({ active, payload }: any) {
             {usd(d.balance)}
           </span>
         </div>
-        <div className="tt-row">
-          <span className="lbl">% funded</span>
-          <span className="val">{Math.round(d.percentFunded * 100)}%</span>
-        </div>
       </div>
 
       {hasIn && (
         <div className="tt-section">
-          <div className="tt-section-title">Money in</div>
           {d.contribution > 0 && (
             <div className="tt-row">
               <span className="lbl">Contribution</span>
@@ -459,10 +420,9 @@ function TimelineTooltip({ active, payload }: any) {
 
       {hasOut && (
         <div className="tt-section tt-section-out">
-          <div className="tt-section-title">Money out</div>
           <div className="tt-row tt-total-row">
             <span className="lbl">Total expenditures</span>
-            <span className="val">{usd(d.expenditures)}</span>
+            <span className="val">{usdSigned(-d.expenditures)}</span>
           </div>
           {hasComponents && (
             <div className="tt-components-scroll">
