@@ -51,6 +51,16 @@ body {
   min-height: 100vh;
 }
 
+.info-banner {
+  background: var(--ink);
+  color: var(--paper);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 16px;
+  letter-spacing: 0.01em;
+}
+
 a {
   color: inherit;
 }

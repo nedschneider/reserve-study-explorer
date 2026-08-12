@@ -68,6 +68,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <div className="info-banner">Updated from Maintenance Plan · 8/10/2026</div>
       <Header onReset={() => dispatch({ type: "reset" })} />
       <Hero scenario={scenario} results={results} breakEvenContribution={breakEvenContribution} onApplyBreakEven={onApplyBreakEven} />
       <TimelineChart results={results} />
